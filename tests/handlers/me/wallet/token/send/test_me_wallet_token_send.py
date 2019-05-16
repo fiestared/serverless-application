@@ -879,11 +879,8 @@ class TestMeWalletTokenSend(TestCase):
 
     def test_main_ng_invalid_encrypted_pin_code(self):
         with patch('me_wallet_token_send.MeWalletTokenSend._MeWalletTokenSend__verify_user_attribute') \
-            as mock_verify_user_attribute:
-
+                as mock_verify_user_attribute:
             target_token_send_value = str(settings.parameters['token_send_value']['minimum'])
-            private_eth_address = '0x3000000000000000000000000000000000000000'
-            recipient_eth_address = '0x2000000000000000000000000000000000000000'
             event = {
                 'body': {
                     'recipient_eth_address': '0x2000000000000000000000000000000000000000',
@@ -895,7 +892,7 @@ class TestMeWalletTokenSend(TestCase):
                     'authorizer': {
                         'claims': {
                             'cognito:username': 'user_01',
-                            'custom:private_eth_address': private_eth_address,
+                            'custom:private_eth_address': '0x3000000000000000000000000000000000000000',
                             'phone_number_verified': 'true',
                             'email_verified': 'true'
                         }
@@ -905,26 +902,26 @@ class TestMeWalletTokenSend(TestCase):
             event['body'] = json.dumps(event['body'])
 
             # テスト対象実施
-            mock_verify_user_attribute.side_effect = ClientError({'Error': {'Code':'NotAuthorizedException'}}, '')
+            mock_verify_user_attribute.side_effect = ClientError({'Error': {'Code': 'NotAuthorizedException'}}, '')
             response = MeWalletTokenSend(event, {}, self.dynamodb, cognito=None).main()
             self.assertEqual(response['statusCode'], 400)
             self.assertIsNotNone(re.match('{"message": "Invalid parameter: Access token is invalid"}', response['body']))
 
-            mock_verify_user_attribute.side_effect = ClientError({'Error': {'Code':'CodeMismatchException'}}, '')
+            mock_verify_user_attribute.side_effect = ClientError({'Error': {'Code': 'CodeMismatchException'}}, '')
             response = MeWalletTokenSend(event, {}, self.dynamodb, cognito=None).main()
             self.assertEqual(response['statusCode'], 400)
             self.assertIsNotNone(re.match('{"message": "Invalid parameter: Pin code is invalid"}', response['body']))
 
-            mock_verify_user_attribute.side_effect = ClientError({'Error': {'Code':'ExpiredCodeException'}}, '')
+            mock_verify_user_attribute.side_effect = ClientError({'Error': {'Code': 'ExpiredCodeException'}}, '')
             response = MeWalletTokenSend(event, {}, self.dynamodb, cognito=None).main()
             self.assertEqual(response['statusCode'], 400)
             self.assertIsNotNone(re.match('{"message": "Invalid parameter: Pin code is expired"}', response['body']))
 
-            mock_verify_user_attribute.side_effect = ClientError({'Error': {'Code':'LimitExceededException'}}, '')
+            mock_verify_user_attribute.side_effect = ClientError({'Error': {'Code': 'LimitExceededException'}}, '')
             response = MeWalletTokenSend(event, {}, self.dynamodb, cognito=None).main()
             self.assertEqual(response['statusCode'], 400)
             self.assertIsNotNone(re.match('{"message": "Invalid parameter: Verification limit is exceeded"}', response['body']))
 
-            mock_verify_user_attribute.side_effect = ClientError({'Error': {'Code':'Other'}}, '')
+            mock_verify_user_attribute.side_effect = ClientError({'Error': {'Code': 'Other'}}, '')
             response = MeWalletTokenSend(event, {}, self.dynamodb, cognito=None).main()
             self.assertEqual(response['statusCode'], 500)
