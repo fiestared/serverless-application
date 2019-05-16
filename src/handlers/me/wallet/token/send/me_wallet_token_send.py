@@ -221,9 +221,9 @@ class MeWalletTokenSend(LambdaBase):
             else:
                 raise client_error
 
-    def __verify_user_attribute(self, encrypted_access_token, encrypted_pin_code):
+    def __verify_user_attribute(self, access_token, pin_code):
         self.cognito.verify_user_attribute(
-            AccessToken=encrypted_access_token,
+            AccessToken=access_token,
             AttributeName='phone_number',
-            Code=encrypted_pin_code
+            Code=pin_code
         )

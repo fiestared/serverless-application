@@ -1,6 +1,7 @@
 import os
 import base64
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES, PKCS1_OAEP
+from Crypto.PublicKey import RSA
 from botocore.exceptions import ClientError
 
 
@@ -33,3 +34,9 @@ class CryptoUtil:
             )
         except ClientError as e:
             raise e
+
+    @staticmethod
+    def rsa_decrypt(data, private_key_text):
+        private_key = RSA.importKey(private_key_text)
+        cipher = PKCS1_OAEP.new(private_key)
+        return cipher.decrypt(data)
