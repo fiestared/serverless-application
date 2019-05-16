@@ -205,10 +205,10 @@ parameters = {
         'type': 'string',
         'pattern': r'^0x[a-fA-F0-9]{40}$'
     },
-    'access_token': {
+    'encrypted_access_token': {
         'type': 'string'
     },
-    'pin_code': {
+    'encrypted_pin_code': {
         'type': 'string'
     }
 }

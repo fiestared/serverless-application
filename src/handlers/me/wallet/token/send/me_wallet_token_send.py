@@ -24,10 +24,10 @@ class MeWalletTokenSend(LambdaBase):
             'properties': {
                 'recipient_eth_address': settings.parameters['eth_address'],
                 'send_value': settings.parameters['token_send_value'],
-                'access_token': settings.parameters['access_token'],
-                'pin_code': settings.parameters['pin_code']
+                'encrypted_access_token': settings.parameters['encrypted_access_token'],
+                'encrypted_pin_code': settings.parameters['encrypted_pin_code']
             },
-            'required': ['recipient_eth_address', 'send_value', 'access_token', 'pin_code']
+            'required': ['recipient_eth_address', 'send_value', 'encrypted_access_token', 'encrypted_pin_code']
         }
 
     def validate_params(self):
@@ -40,7 +40,7 @@ class MeWalletTokenSend(LambdaBase):
             raise ValidationError('send_value must be numeric')
 
         # pinコードを検証
-        self.__validate_pin_code(self.params['access_token'], self.params['pin_code'])
+        self.__validate_encrypted_pin_code(self.params['encrypted_access_token'], self.params['encrypted_pin_code'])
 
         validate(self.params, self.get_schema())
 
@@ -205,9 +205,9 @@ class MeWalletTokenSend(LambdaBase):
             }
         )
 
-    def __validate_pin_code(self, access_token, pin_code):
+    def __validate_encrypted_pin_code(self, encrypted_access_token, encrypted_pin_code):
         try:
-            self.__verify_user_attribute(access_token, pin_code)
+            self.__verify_user_attribute(encrypted_access_token, encrypted_pin_code)
         except ClientError as client_error:
             code = client_error.response['Error']['Code']
             if code == 'NotAuthorizedException':
@@ -221,9 +221,9 @@ class MeWalletTokenSend(LambdaBase):
             else:
                 raise client_error
 
-    def __verify_user_attribute(self, access_token, pin_code):
+    def __verify_user_attribute(self, encrypted_access_token, encrypted_pin_code):
         self.cognito.verify_user_attribute(
-            AccessToken=access_token,
+            AccessToken=encrypted_access_token,
             AttributeName='phone_number',
-            Code=pin_code
+            Code=encrypted_pin_code
         )

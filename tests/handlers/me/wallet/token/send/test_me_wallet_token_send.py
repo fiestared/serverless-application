@@ -63,8 +63,8 @@ class TestMeWalletTokenSend(TestCase):
                 'body': {
                     'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                     'send_value': target_token_send_value,
-                    'access_token': 'abcdef',
-                    'pin_code': '123456'
+                    'encrypted_access_token': 'xxxxxx',
+                    'encrypted_pin_code': 'yyyyyy'
                 },
                 'requestContext': {
                     'authorizer': {
@@ -178,8 +178,8 @@ class TestMeWalletTokenSend(TestCase):
                 'body': {
                     'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                     'send_value': target_token_send_value,
-                    'access_token': 'abcdef',
-                    'pin_code': '123456'
+                    'encrypted_access_token': 'xxxxxx',
+                    'encrypted_pin_code': 'yyyyyy'
                 },
                 'requestContext': {
                     'authorizer': {
@@ -375,8 +375,8 @@ class TestMeWalletTokenSend(TestCase):
                 'body': {
                     'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                     'send_value': target_token_send_value,
-                    'access_token': 'abcdef',
-                    'pin_code': '123456'
+                    'encrypted_access_token': 'xxxxxx',
+                    'encrypted_pin_code': 'yyyyyy'
                 },
                 'requestContext': {
                     'authorizer': {
@@ -540,8 +540,8 @@ class TestMeWalletTokenSend(TestCase):
             'body': {
                 'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                 'send_value': target_token_send_value,
-                'access_token': 'abcdef',
-                'pin_code': '123456'
+                'encrypted_access_token': 'xxxxxx',
+                'encrypted_pin_code': 'yyyyyy'
             },
             'requestContext': {
                 'authorizer': {
@@ -591,8 +591,8 @@ class TestMeWalletTokenSend(TestCase):
                 'body': {
                     'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                     'send_value': target_token_send_value,
-                    'access_token': 'abcdef',
-                    'pin_code': '123456'
+                    'encrypted_access_token': 'xxxxxx',
+                    'encrypted_pin_code': 'yyyyyy'
                 },
                 'requestContext': {
                     'authorizer': {
@@ -655,8 +655,8 @@ class TestMeWalletTokenSend(TestCase):
                 'body': {
                     'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                     'send_value': target_token_send_value,
-                    'access_token': 'abcdef',
-                    'pin_code': '123456'
+                    'encrypted_access_token': 'xxxxxx',
+                    'encrypted_pin_code': 'yyyyyy'
                 },
                 'requestContext': {
                     'authorizer': {
@@ -698,8 +698,8 @@ class TestMeWalletTokenSend(TestCase):
             'body': {
                 'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                 'send_value': target_token_send_value,
-                'access_token': 'abcdef',
-                'pin_code': '123456'
+                'encrypted_access_token': 'xxxxxx',
+                'encrypted_pin_code': 'yyyyyy'
             },
             'requestContext': {
                 'authorizer': {
@@ -729,8 +729,8 @@ class TestMeWalletTokenSend(TestCase):
             'body': {
                 'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                 'send_value': target_token_send_value,
-                'access_token': 'abcdef',
-                'pin_code': '123456'
+                'encrypted_access_token': 'xxxxxx',
+                'encrypted_pin_code': 'yyyyyy'
             },
             'requestContext': {
                 'authorizer': {
@@ -760,8 +760,8 @@ class TestMeWalletTokenSend(TestCase):
             'body': {
                 'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                 'send_value': target_token_send_value,
-                'access_token': 'abcdef',
-                'pin_code': '123456'
+                'encrypted_access_token': 'xxxxxx',
+                'encrypted_pin_code': 'yyyyyy'
             },
             'requestContext': {
                 'authorizer': {
@@ -791,8 +791,8 @@ class TestMeWalletTokenSend(TestCase):
             'body': {
                 'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                 'send_value': target_token_send_value,
-                'access_token': 'abcdef',
-                'pin_code': '123456'
+                'encrypted_access_token': 'xxxxxx',
+                'encrypted_pin_code': 'yyyyyy'
             },
             'requestContext': {
                 'authorizer': {
@@ -822,8 +822,8 @@ class TestMeWalletTokenSend(TestCase):
             'body': {
                 'recipient_eth_address': 0x2000000000000000000000000000000000000000,
                 'send_value': target_token_send_value,
-                'access_token': 'abcdef',
-                'pin_code': '123456'
+                'encrypted_access_token': 'xxxxxx',
+                'encrypted_pin_code': 'yyyyyy'
             },
             'requestContext': {
                 'authorizer': {
@@ -853,8 +853,8 @@ class TestMeWalletTokenSend(TestCase):
             'body': {
                 'recipient_eth_address': '0x200000000000000000000000000000000000ZZZZ',
                 'send_value': target_token_send_value,
-                'access_token': 'abcdef',
-                'pin_code': '123456'
+                'encrypted_access_token': 'xxxxxx',
+                'encrypted_pin_code': 'yyyyyy'
             },
             'requestContext': {
                 'authorizer': {
@@ -877,7 +877,7 @@ class TestMeWalletTokenSend(TestCase):
         items = token_send_table_name.scan()['Items']
         self.assertEqual(len(items), 0)
 
-    def test_main_ng_invalid_pin_code(self):
+    def test_main_ng_invalid_encrypted_pin_code(self):
         with patch('me_wallet_token_send.MeWalletTokenSend._MeWalletTokenSend__verify_user_attribute') \
             as mock_verify_user_attribute:
 
@@ -888,8 +888,8 @@ class TestMeWalletTokenSend(TestCase):
                 'body': {
                     'recipient_eth_address': '0x2000000000000000000000000000000000000000',
                     'send_value': target_token_send_value,
-                    'access_token': 'abcdef',
-                    'pin_code': '123456'
+                    'encrypted_access_token': 'xxxxxx',
+                    'encrypted_pin_code': 'yyyyyy'
                 },
                 'requestContext': {
                     'authorizer': {
