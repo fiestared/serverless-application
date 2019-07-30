@@ -33,7 +33,7 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
 
         # lambda on VPCの要素が見当たらないが、、設定ファイルを見る必要があるか？
         # eoaの変数代入が必要、ユーザのprivate_eth_address
-        eoa = ''
+        eoa = self.__get_user_private_eth_address(self.params['user_id'])
 
         fromBlock = 1
         
@@ -76,5 +76,15 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
             # ステータスコードを確認して、失敗していたら例外を投げる処理を後々追加
             transfer_result_to = tofilter.get
             filterdata(transfer_result_to)
+
+        def __get_user_private_eth_address(self, user_id):
+            # user_id に紐づく private_eth_address を取得
+            user_info = UserUtil.get_cognito_user_info(self.cognito, user_id)
+            private_eth_address = [a for a in user_info['UserAttributes'] if a.get('Name') == 'custom:private_eth_address']
+            # private_eth_address が存在しないケースは想定していないため、取得出来ない場合は例外とする
+            if len(private_eth_address) != 1:
+                raise RecordNotFoundError('Record Not Found: private_eth_address')
+
+            return private_eth_address[0]['Value']
 
         getTransferHistory(address, fromBlock, eoa)
