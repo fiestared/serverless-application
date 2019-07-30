@@ -1,7 +1,6 @@
 import os
 import yaml
 import boto3
-import re
 
 
 class TestsUtil:
@@ -10,7 +9,7 @@ class TestsUtil:
     @staticmethod
     def create_table(dynamodb, table_name, table_items):
         # create table
-        f = open(TestsUtil.__database_yaml_path(), 'r+')
+        f = open('./database.yaml', 'r+')
         template = yaml.load(f)
         f.close()
 
@@ -105,8 +104,7 @@ class TestsUtil:
             {'env_name': 'PAID_ARTICLES_TABLE_NAME', 'table_name': 'PaidArticles'},
             {'env_name': 'PAID_STATUS_TABLE_NAME', 'table_name': 'PaidStatus'},
             {'env_name': 'TOKEN_SEND_TABLE_NAME', 'table_name': 'TokenSend'},
-            {'env_name': 'SUCCEEDED_TIP_TABLE_NAME', 'table_name': 'SucceededTip'},
-            {'env_name': 'USER_CONFIGURATIONS_TABLE_NAME', 'table_name': 'UserConfigurations'}
+            {'env_name': 'SUCCEEDED_TIP_TABLE_NAME', 'table_name': 'SucceededTip'}
         ]
         if os.environ.get('IS_DYNAMODB_ENDPOINT_OF_AWS') is not None:
             for table in cls.all_tables:
@@ -121,7 +119,3 @@ class TestsUtil:
             if r['ResourceType'] == 'AWS::DynamoDB::Table' and r['LogicalResourceId'] == table_name:
                 return(r['PhysicalResourceId'])
         return
-
-    @staticmethod
-    def __database_yaml_path():
-        return re.sub(r'/(tests|tmp_tests)/.*', '/database.yaml', os.path.dirname(os.path.realpath(__file__)))
