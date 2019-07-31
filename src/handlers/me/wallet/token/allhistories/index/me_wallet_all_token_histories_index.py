@@ -2,7 +2,8 @@
 import settings
 import os
 import json
-from private_chain_util import PrivateChainUtil
+import time
+from datetime import datetime
 from user_util import UserUtil
 from web3 import Web3, HTTPProvider
 from lambda_base import LambdaBase
@@ -29,10 +30,13 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
         def removeLeft(eoa):
             return '0x' + eoa[26:]
 
+        ### printではなく、S3に抽出できるように対応する
+        ### ファイルを作成し、その中に出力結果を保持→そのファイルをS3へ書き込む手順で
+        ### 特定のユーザのみがアクセス可能なS3のbacketを作成する
         def filter_transfer_data(transfer_result):
             for i in range(len(transfer_result)):
-                ### Dateを追加する
-                print("%s,%s,%s,%s"%(
+                print("%s,%s,%s,%s,%s"%(
+                    datetime.fromtimestamp(self.web3.eth.getBlock(transfer_result[i]['blockNumber'])['timestamp']),
                     transfer_result[i]['transactionHash'].hex(),
                     removeLeft(transfer_result[i]['topics'][1].hex()),
                     removeLeft(transfer_result[i]['topics'][2].hex()),
@@ -42,8 +46,8 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
 
         def filter_mint_data(mint_result):
             for i in range(len(mint_result)):
-                ### Dateを追加する
-                print("%s,%s,%s,%s"%(
+                print("%s,%s,%s,%s,%s"%(
+                    datetime.fromtimestamp(self.web3.eth.getBlock(transfer_result[i]['blockNumber'])['timestamp']),
                     mint_result[i]['transactionHash'].hex(),
                     '---',
                     removeLeft(mint_result[i]['topics'][1].hex()),
@@ -61,10 +65,6 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
                 ],
                 })
 
-            ### ステータスコードを確認して、失敗していたら例外を投げる処理を後々追加する
-            transfer_result_from = fromfilter.get_all_entries()
-            filter_transfer_data(transfer_result_from)
-
             tofilter = self.web3.eth.filter({
                 "address": address,
                 "fromBlock": 1,
@@ -76,13 +76,14 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
 #                            ['', padLeft(eoa)]
                 ],
             })
-
             ### ステータスコードを確認して、失敗していたら例外を投げる処理を後々追加する
+            transfer_result_from = fromfilter.get_all_entries()
+            filter_transfer_data(transfer_result_from)
+
             transfer_result_to = tofilter.get_all_entries()
             filter_transfer_data(transfer_result_to)
 
-        def getMintHistory(address, eoa):
-            
+        def getMintHistory(address, eoa):            
             to_filter = self.web3.eth.filter({
                 "address": address,
                 "fromBlock": 1,
