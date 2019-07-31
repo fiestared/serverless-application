@@ -81,7 +81,6 @@ Resources:
         Variables:
           NOTIFICATION_TABLE_NAME: !Ref NotificationTableName
           COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
-          COGNITO_USER_POOL_APP_ID: !Ref CognitoUserPoolAppId
       Handler: handler.lambda_handler
       MemorySize: 3008
       Role: !GetAtt LambdaRole.Arn
