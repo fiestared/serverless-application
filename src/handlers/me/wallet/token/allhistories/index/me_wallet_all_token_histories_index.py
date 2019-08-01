@@ -5,13 +5,15 @@ import json
 import time
 import csv
 import boto3
+import hashlib
 from datetime import datetime
+from time_util import TimeUtil
 from user_util import UserUtil
 from web3 import Web3, HTTPProvider
 from lambda_base import LambdaBase
 
 ### TODO:全体的なCodingは他に合わせて修正
-
+### TODO:通知のアイコンをダウンロードマークに修正する
 class MeWalletAllTokenHistoriesIndex(LambdaBase):
 
     def get_schema(self):
@@ -132,6 +134,9 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
             with open(tmp_csv_file, 'rb') as f:
                 csv_file = f.read()
                 res = upload_file(bucket, key, csv_file)
+            
+            announce_url = 'https://'+bucket+'.s3-ap-northeast-1.amazonaws.com/'+key
+            return announce_url
 
         def upload_file(bucket, key, bytes):
             s3 = boto3.resource('s3')
@@ -142,9 +147,10 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
         getTransferHistory(address, eoa)
         getMintHistory(address, eoa)
         f.close()
-        extract_file_to_s3()
+        announce_url = extract_file_to_s3()
 
-        ### TODO:ファイル名をreturnしてあげると良い？（ダウンロードリンク生成用に）
+        self.__notification(user_id, announce_url)
+
         return {
             'statusCode': 200
         }
@@ -158,3 +164,28 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
             raise RecordNotFoundError('Record Not Found: private_eth_address')
 
         return private_eth_address[0]['Value']
+
+    def __update_unread_notification_manager(self, user_id):
+        unread_notification_manager_table = self.dynamodb.Table(os.environ['UNREAD_NOTIFICATION_MANAGER_TABLE_NAME'])
+
+        unread_notification_manager_table.update_item(
+            Key={'user_id': user_id},
+            UpdateExpression='set unread = :unread',
+            ExpressionAttributeValues={':unread': True}
+        )
+
+    def __notification(self, user_id, announce_url):
+        notification_table = self.dynamodb.Table(os.environ['NOTIFICATION_TABLE_NAME'])
+
+        notification_table.put_item(Item={
+            'notification_id': self.__get_randomhash(),
+            'user_id': user_id,
+            'sort_key': TimeUtil.generate_sort_key(),
+            'type': settings.ANNOUNCE_NOTIFICATION_TYPE,
+            'created_at': int(time.time()),
+            'announce_body': '全トークン履歴のcsvのダウンロード準備が完了しました',
+            'announce_url': announce_url
+        })
+
+    def __get_randomhash(self):
+        return hashlib.sha256((str(time.time()) + str(os.urandom(16))).encode('utf-8')).hexdigest()

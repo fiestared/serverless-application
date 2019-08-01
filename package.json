@@ -9,5 +9,8 @@
   "devDependencies": {
     "cfn-lint": "^1.9.7",
     "serverless": "^1.47.0"
+  },
+  "dependencies": {
+    "vue": "^2.6.10"
   }
 }
