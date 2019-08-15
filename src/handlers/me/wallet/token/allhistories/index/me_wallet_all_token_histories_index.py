@@ -103,15 +103,6 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
                     self.web3.fromWei(int(transfer_result[i]['data'], 16), 'ether')
                 ])
 
-        def filter_mint_data(mint_result):
-            for i in range(len(mint_result)):
-                writer.writerow([
-                    datetime.fromtimestamp(self.web3.eth.getBlock(mint_result[i]['blockNumber'])['timestamp']),
-                    mint_result[i]['transactionHash'].hex(),
-                    add_type('---', removeLeft(mint_result[i]['topics'][1].hex())),
-                    self.web3.fromWei(int(mint_result[i]['data'], 16), 'ether')
-                ])
-            
         def getTransferHistory(address, eoa):
             fromfilter = self.web3.eth.filter({
                 "address": address,
@@ -132,18 +123,19 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
                 ],
             })
             
-            ### ステータスコードを確認して、失敗していたら例外を投げる処理を後々追加する
-            try:
-                transfer_result_from = fromfilter.get_all_entries()
-                filter_transfer_data(transfer_result_from)
-                transfer_result_to = tofilter.get_all_entries()
-                filter_transfer_data(transfer_result_to)    
-            except ClientError as e:
-                    logging.fatal(e)
-                    return {
-                        'statusCode': 500,
-                        'body': json.dumps({'message': 'Internal server error'})
-                    }
+            transfer_result_from = fromfilter.get_all_entries()
+            filter_transfer_data(transfer_result_from)
+            transfer_result_to = tofilter.get_all_entries()
+            filter_transfer_data(transfer_result_to)    
+
+        def filter_mint_data(mint_result):
+            for i in range(len(mint_result)):
+                writer.writerow([
+                    datetime.fromtimestamp(self.web3.eth.getBlock(mint_result[i]['blockNumber'])['timestamp']),
+                    mint_result[i]['transactionHash'].hex(),
+                    add_type('---', removeLeft(mint_result[i]['topics'][1].hex())),
+                    self.web3.fromWei(int(mint_result[i]['data'], 16), 'ether')
+                ])
 
         def getMintHistory(address, eoa):            
             to_filter = self.web3.eth.filter({
@@ -155,16 +147,9 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
                 ],
             })
 
-            try:
-                mint_result = to_filter.get_all_entries()
-                filter_mint_data(mint_result)
-            except ClientError as e:
-                    logging.fatal(e)
-                    return {
-                        'statusCode': 500,
-                        'body': json.dumps({'message': 'Internal server error'})
-                    }
-
+            mint_result = to_filter.get_all_entries()
+            filter_mint_data(mint_result)
+            
         def extract_file_to_s3():
             bucket = os.environ['ALL_TOKEN_HISTORY_CSV_DWONLOAD_S3_BUCKET']
             JST = timezone(timedelta(hours=+9), 'JST')
@@ -183,8 +168,17 @@ class MeWalletAllTokenHistoriesIndex(LambdaBase):
             res = s3Obj.put(Body = bytes)
             return res
 
-        getTransferHistory(address, eoa)
-        getMintHistory(address, eoa)
+
+        try:
+            getTransferHistory(address, eoa)
+            getMintHistory(address, eoa)
+        except ClientError as e:
+            logging.fatal(e)
+            return {
+                'statusCode': 500,
+                'body': json.dumps({'message': 'Internal server error'})
+            }
+
         f.close()
         announce_url = extract_file_to_s3()
 
